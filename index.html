@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradual Web3 — One Concept a Day</title>
+<style>
+  [data-theme="dark"] {
+    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #2e2e2e;
+    --text: #e8e8e8; --text2: #aaa; --muted: #555; --accent: #8b5cf6;
+    --green: #22c55e; --green-bg: #14532d22;
+    --yellow: #eab308; --yellow-bg: #713f1222;
+    --red: #ef4444; --red-bg: #7f1d1d22;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  [data-theme="light"] {
+    --bg: #f4f6f8; --surface: #ffffff; --surface2: #f0f2f5; --border: #dde1e7;
+    --text: #111827; --text2: #4b5563; --muted: #9ca3af; --accent: #7c3aed;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --yellow: #d97706; --yellow-bg: #fffbeb;
+    --red: #dc2626; --red-bg: #fef2f2;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; transition: background 0.2s, color 0.2s; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+  .header-inner { max-width: 1000px; margin: 0 auto; }
+  .header-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+  .logo { font-size: 17px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .tagline { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .overall-count { font-size: 13px; color: var(--text2); white-space: nowrap; }
+  .overall-count strong { color: var(--green); font-size: 16px; font-weight: 700; }
+  .progress-bar-wrap { width: 160px; background: var(--surface2); border-radius: 999px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 999px; transition: width 0.4s ease; width: 0%; }
+  .theme-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: background 0.2s; flex-shrink: 0; }
+  .theme-btn:hover { background: var(--border); }
+
+  .header-row2 { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .search-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 7px 12px; color: var(--text); font-size: 13px; outline: none; width: 210px; transition: border-color 0.2s; }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--muted); }
+  .filter-group { display: flex; gap: 4px; }
+  .filter-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; color: var(--text2); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .diff-filter-group { display: flex; gap: 4px; }
+  .diff-filter-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-family: inherit; transition: all 0.15s; font-weight: 600; }
+  .diff-filter-btn.found { color: var(--green); }
+  .diff-filter-btn.inter { color: var(--yellow); }
+  .diff-filter-btn.adv { color: var(--red); }
+  .diff-filter-btn.active.found { background: var(--green-bg); border-color: var(--green); }
+  .diff-filter-btn.active.inter { background: var(--yellow-bg); border-color: var(--yellow); }
+  .diff-filter-btn.active.adv { background: var(--red-bg); border-color: var(--red); }
+  .reset-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; color: var(--muted); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; margin-left: auto; }
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .main { max-width: 1000px; margin: 0 auto; padding: 20px 24px; }
+  .stats-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; flex: 1; min-width: 120px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.blue { color: var(--accent); }
+  .stat-value.yellow { color: var(--yellow); }
+
+  .category { margin-bottom: 10px; }
+  .cat-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; user-select: none; transition: background 0.15s; box-shadow: var(--shadow); }
+  .cat-header:hover { background: var(--surface2); }
+  .category.open .cat-header { border-radius: 10px 10px 0 0; }
+  .cat-chevron { font-size: 9px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+  .category.open .cat-chevron { transform: rotate(90deg); }
+  .cat-emoji { font-size: 16px; flex-shrink: 0; }
+  .cat-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .cat-subtitle { font-size: 10px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .cat-meta { display: flex; align-items: center; gap: 8px; }
+  .cat-done-count { font-size: 12px; color: var(--green); font-weight: 700; }
+  .cat-total-count { font-size: 12px; color: var(--muted); }
+  .cat-bar-wrap { width: 70px; background: var(--surface2); border-radius: 999px; height: 4px; overflow: hidden; }
+  .cat-bar-fill { height: 100%; background: var(--green); border-radius: 999px; transition: width 0.3s; }
+
+  .questions-list { border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; display: none; background: var(--surface); }
+  .category.open .questions-list { display: block; }
+  .q-row { display: flex; align-items: center; gap: 12px; padding: 9px 16px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .q-row:last-child { border-bottom: none; }
+  .q-row:hover { background: var(--surface2); }
+  .q-row.done { opacity: 0.45; }
+  .q-row.hidden { display: none; }
+  .q-checkbox { width: 17px; height: 17px; border-radius: 4px; border: 2px solid var(--border); background: transparent; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 10px; font-weight: 800; color: #fff; }
+  .q-checkbox:hover { border-color: var(--green); }
+  .q-checkbox.checked { background: var(--green); border-color: var(--green); }
+  .q-order { font-size: 10px; color: var(--muted); width: 24px; text-align: right; flex-shrink: 0; font-family: monospace; }
+  .diff-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; letter-spacing: 0.3px; text-transform: uppercase; }
+  .diff-badge.F { background: var(--green-bg); color: var(--green); }
+  .diff-badge.I { background: var(--yellow-bg); color: var(--yellow); }
+  .diff-badge.A { background: var(--red-bg); color: var(--red); }
+  .q-title { flex: 1; font-size: 13px; color: var(--text); text-decoration: none; line-height: 1.4; }
+  .q-row.done .q-title { text-decoration: line-through; color: var(--muted); }
+  .q-title:hover { color: var(--accent); }
+  .src-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; font-family: monospace; }
+  .src-badge.Blog    { background: #1e3a5f22; color: #60a5fa; border: 1px solid #1e3a5f55; }
+  .src-badge.Paper   { background: #4c1d9522; color: #a78bfa; border: 1px solid #4c1d9555; }
+  .src-badge.Course  { background: #78350f22; color: #fb923c; border: 1px solid #78350f55; }
+  .src-badge.Docs    { background: #134e4a22; color: #2dd4bf; border: 1px solid #134e4a55; }
+  .src-badge.Video   { background: #7f1d1d22; color: #f87171; border: 1px solid #7f1d1d55; }
+  .src-badge.Weekend { background: #14532d22; color: #4ade80; border: 1px solid #14532d55; }
+  .src-badge.Week1   { background: #713f1222; color: #fb923c; border: 1px solid #78350f55; }
+  .src-badge.Week2   { background: #4c1d9522; color: #c084fc; border: 1px solid #4c1d9555; }
+  .q-link.build { border-color: var(--green); color: var(--green); }
+  .q-link.build:hover { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .q-link { font-size: 11px; color: var(--muted); text-decoration: none; padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; transition: all 0.15s; white-space: nowrap; }
+  .q-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  .concept-divider { display: flex; align-items: center; gap: 10px; padding: 6px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .concept-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+  .empty { text-align: center; padding: 60px 24px; color: var(--muted); display: none; }
+  .empty.show { display: block; }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-text { font-size: 14px; }
+  .footer { text-align: center; padding: 32px 24px; color: var(--muted); font-size: 11px; }
+
+  @media (max-width: 600px) {
+    .header { padding: 12px 14px; }
+    .main { padding: 12px 14px; }
+    .progress-bar-wrap { width: 100px; }
+    .q-order { display: none; }
+    .search-input { width: 150px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-row1">
+      <div>
+        <div class="logo">Gradual <span>Web3</span></div>
+        <div class="tagline">One concept a day. From zero to employable on-chain.</div>
+      </div>
+      <div class="header-right">
+        <div class="overall-count"><strong id="done-count">0</strong> / <span id="total-count">0</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar"></div></div>
+        <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+      </div>
+    </div>
+    <div class="header-row2">
+      <input class="search-input" id="search" type="text" placeholder="Search topics...">
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="todo">To Do</button>
+        <button class="filter-btn" data-filter="done">Done</button>
+      </div>
+      <div class="diff-filter-group">
+        <button class="diff-filter-btn found" data-diff="F">Foundational</button>
+        <button class="diff-filter-btn inter" data-diff="I">Intermediate</button>
+        <button class="diff-filter-btn adv" data-diff="A">Advanced</button>
+      </div>
+      <button class="reset-btn" id="reset-btn">Reset All</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Read</div><div class="stat-value green" id="stat-done">0</div></div>
+    <div class="stat-card"><div class="stat-label">Remaining</div><div class="stat-value blue" id="stat-rem">0</div></div>
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
+    <div class="stat-card"><div class="stat-label">Progress</div><div class="stat-value yellow" id="stat-pct">0%</div></div>
+  </div>
+  <div id="categories"></div>
+  <div class="empty" id="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">No topics match your filters.</div></div>
+  <div class="footer">Read slow. Build on-chain. Ship something real. &nbsp;·&nbsp; Updated through June 2025 &nbsp;·&nbsp; Created by <a href="https://www.linkedin.com/in/bythebug" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">bythebug</a></div>
+</div>
+
+<script>
+const DATA = [
+  {
+    id: 'blockchain', emoji: '🔗', name: 'Blockchain Fundamentals',
+    subtitle: 'understand what you are building on before you build',
+    concepts: [
+      { name: 'How Blockchains Work', items: [
+        { title: 'But How Does Bitcoin Actually Work? — 3Blue1Brown', src: 'Video', diff: 'F', url: 'https://www.youtube.com/watch?v=bBC-nXj3Ng4' },
+        { title: 'Bitcoin Whitepaper — Satoshi Nakamoto', src: 'Paper', diff: 'F', url: 'https://bitcoin.org/bitcoin.pdf' },
+        { title: 'Blockchain Demo: See It Happen Block by Block', src: 'Blog', diff: 'F', url: 'https://andersbrownworth.com/blockchain/' },
+        { title: 'How Does Ethereum Work, Anyway? — Preethi Kasireddy', src: 'Blog', diff: 'F', url: 'https://preethikasireddy.medium.com/how-does-ethereum-work-anyway-22d1df506369' },
+      ]},
+      { name: 'Cryptography Essentials', items: [
+        { title: 'Hash Functions: SHA-256 and Why They Are One-Way', src: 'Video', diff: 'F', url: 'https://www.youtube.com/watch?v=DMtFhACPnTY' },
+        { title: 'Public Key Cryptography & Digital Signatures', src: 'Video', diff: 'F', url: 'https://www.youtube.com/watch?v=AQDCe585Lnc' },
+        { title: 'Merkle Trees: How Blockchains Verify Data Efficiently', src: 'Blog', diff: 'F', url: 'https://brilliant.org/wiki/merkle-tree/' },
+        { title: 'ECDSA: The Signature Scheme Behind Every Ethereum Transaction', src: 'Blog', diff: 'I', url: 'https://cryptobook.nakov.com/digital-signatures/ecdsa-sign-verify-messages' },
+      ]},
+      { name: 'Consensus Mechanisms', items: [
+        { title: 'Proof of Work vs Proof of Stake — Explained Simply', src: 'Blog', diff: 'F', url: 'https://ethereum.org/en/developers/docs/consensus-mechanisms/' },
+        { title: 'Ethereum\'s Proof of Stake: How Validators Work', src: 'Docs', diff: 'I', url: 'https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/' },
+        { title: 'Finality: Why Blockchain Transactions Take Time to Settle', src: 'Blog', diff: 'I', url: 'https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/finality/' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'ethereum', emoji: '⟠', name: 'Ethereum & the EVM',
+    subtitle: 'the world computer — accounts, gas, and how code runs on-chain',
+    concepts: [
+      { name: 'Ethereum Architecture', items: [
+        { title: 'Ethereum Whitepaper — Vitalik Buterin', src: 'Paper', diff: 'F', url: 'https://ethereum.org/en/whitepaper/' },
+        { title: 'Ethereum in 30 Minutes — Vitalik at Devcon', src: 'Video', diff: 'F', url: 'https://www.youtube.com/watch?v=66SaEDzlmP4' },
+        { title: 'Accounts: EOAs vs Contract Accounts', src: 'Docs', diff: 'F', url: 'https://ethereum.org/en/developers/docs/accounts/' },
+        { title: 'Transactions: What Happens When You Send ETH', src: 'Docs', diff: 'F', url: 'https://ethereum.org/en/developers/docs/transactions/' },
+        { title: 'Gas & the EVM: Why Every Computation Costs Something', src: 'Docs', diff: 'F', url: 'https://ethereum.org/en/developers/docs/gas/' },
+      ]},
+      { name: 'The EVM', items: [
+        { title: 'EVM Illustrated — Takenobu T.', src: 'Blog', diff: 'I', url: 'https://takenobu-hs.github.io/downloads/ethereum_evm_illustrated.pdf' },
+        { title: 'EVM Opcodes Reference — evm.codes (interactive)', src: 'Docs', diff: 'I', url: 'https://www.evm.codes/' },
+        { title: 'Storage Layout: How Solidity Packs Data On-Chain', src: 'Docs', diff: 'I', url: 'https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html' },
+        { title: 'The ABI: How the EVM Knows Which Function to Call', src: 'Docs', diff: 'I', url: 'https://docs.soliditylang.org/en/latest/abi-spec.html' },
+      ]},
+      { name: 'Ethereum Post-Merge', items: [
+        { title: 'EIP-1559: How Ethereum\'s Fee Market Works', src: 'Blog', diff: 'I', url: 'https://eips.ethereum.org/EIPS/eip-1559' },
+        { title: 'The Merge: Ethereum\'s Switch to Proof of Stake', src: 'Blog', diff: 'F', url: 'https://ethereum.org/en/upgrades/merge/' },
+        { title: 'Ethereum Roadmap: Danksharding, Blobs, and Beyond', src: 'Blog', diff: 'A', url: 'https://ethereum.org/en/roadmap/' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'solidity', emoji: '📜', name: 'Solidity',
+    subtitle: 'write smart contracts that actually work',
+    concepts: [
+      { name: 'Getting Started', items: [
+        { title: 'CryptoZombies: Learn Solidity by Building a Game', src: 'Course', diff: 'F', url: 'https://cryptozombies.io/' },
+        { title: 'Solidity by Example — Annotated Real Contracts', src: 'Docs', diff: 'F', url: 'https://solidity-by-example.org/' },
+        { title: 'Solidity Official Docs: Language Reference', src: 'Docs', diff: 'F', url: 'https://docs.soliditylang.org/en/latest/' },
+        { title: 'SpeedRunEthereum: Gamified Challenges (tokens → DEX → multisig)', src: 'Course', diff: 'F', url: 'https://speedrunethereum.com/' },
+      ]},
+      { name: 'Core Language Features', items: [
+        { title: 'State Variables, Value Types & Reference Types', src: 'Docs', diff: 'F', url: 'https://docs.soliditylang.org/en/latest/types.html' },
+        { title: 'Functions: Visibility, Mutability & Modifiers', src: 'Blog', diff: 'F', url: 'https://solidity-by-example.org/function/' },
+        { title: 'Mappings & Structs: The Real Data Structures of Solidity', src: 'Blog', diff: 'F', url: 'https://solidity-by-example.org/mapping/' },
+        { title: 'Events & Logs: The Off-Chain Communication Channel', src: 'Blog', diff: 'F', url: 'https://solidity-by-example.org/events/' },
+        { title: 'Error Handling: require, revert, assert and Custom Errors', src: 'Blog', diff: 'F', url: 'https://solidity-by-example.org/error/' },
+        { title: 'call, staticcall, delegatecall — When to Use Each', src: 'Blog', diff: 'I', url: 'https://solidity-by-example.org/call/' },
+      ]},
+      { name: 'Token Standards', items: [
+        { title: 'ERC-20: Token Standard — the original EIP', src: 'Docs', diff: 'F', url: 'https://eips.ethereum.org/EIPS/eip-20' },
+        { title: 'ERC-721: NFT Standard — the original EIP', src: 'Docs', diff: 'F', url: 'https://eips.ethereum.org/EIPS/eip-721' },
+        { title: 'ERC-1155: Multi-Token Standard', src: 'Docs', diff: 'I', url: 'https://eips.ethereum.org/EIPS/eip-1155' },
+        { title: 'OpenZeppelin Contracts v5: The Standard Library', src: 'Docs', diff: 'I', url: 'https://docs.openzeppelin.com/contracts/5.x/' },
+        { title: 'ERC-4626: Tokenized Vault Standard for DeFi', src: 'Docs', diff: 'I', url: 'https://eips.ethereum.org/EIPS/eip-4626' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'tooling', emoji: '🔧', name: 'Development Tooling',
+    subtitle: 'the professional stack — test, deploy, debug like a real engineer',
+    concepts: [
+      { name: 'Foundry (Industry Standard)', items: [
+        { title: 'Foundry Book: The Complete Guide', src: 'Docs', diff: 'F', url: 'https://book.getfoundry.sh/' },
+        { title: 'forge test: Writing Unit Tests in Solidity', src: 'Docs', diff: 'F', url: 'https://book.getfoundry.sh/forge/tests' },
+        { title: 'forge script: Deploy & Interact with Contracts', src: 'Docs', diff: 'I', url: 'https://book.getfoundry.sh/tutorials/solidity-scripting' },
+        { title: 'Fuzzing with Foundry: Property-Based Testing', src: 'Docs', diff: 'I', url: 'https://book.getfoundry.sh/forge/fuzz-testing' },
+        { title: 'Forking Mainnet: Test Against Real Protocol State', src: 'Docs', diff: 'I', url: 'https://book.getfoundry.sh/forge/fork-testing' },
+        { title: 'cast: Query Any On-Chain Data from the Terminal', src: 'Docs', diff: 'I', url: 'https://book.getfoundry.sh/cast/' },
+      ]},
+      { name: 'Hardhat (Node.js Ecosystem)', items: [
+        { title: 'Hardhat Getting Started Guide', src: 'Docs', diff: 'F', url: 'https://hardhat.org/getting-started/' },
+        { title: 'Hardhat Testing with Ethers.js + Chai', src: 'Docs', diff: 'F', url: 'https://hardhat.org/tutorial/testing-contracts' },
+        { title: 'Hardhat Ignition: Declarative Deployments', src: 'Docs', diff: 'I', url: 'https://hardhat.org/ignition/docs/getting-started' },
+      ]},
+      { name: 'Node Providers & Infrastructure', items: [
+        { title: 'Alchemy vs Infura vs QuickNode: Which RPC to Use', src: 'Blog', diff: 'F', url: 'https://docs.alchemy.com/docs/how-to-compare-node-providers' },
+        { title: 'JSON-RPC API: Reading Blockchain State Directly', src: 'Docs', diff: 'I', url: 'https://ethereum.org/en/developers/docs/apis/json-rpc/' },
+        { title: 'IPFS: Decentralized Storage for NFT Metadata', src: 'Docs', diff: 'F', url: 'https://docs.ipfs.tech/concepts/what-is-ipfs/' },
+        { title: 'Etherscan: Reading Contracts and Transactions On-Chain', src: 'Blog', diff: 'F', url: 'https://etherscan.io/apis' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'defi', emoji: '💰', name: 'DeFi Protocols',
+    subtitle: 'how the money legos actually work under the hood',
+    concepts: [
+      { name: 'Automated Market Makers', items: [
+        { title: 'How Uniswap Works — the x*y=k Invariant', src: 'Blog', diff: 'F', url: 'https://docs.uniswap.org/contracts/v2/concepts/protocol-overview/how-uniswap-works' },
+        { title: 'Uniswap V2 Core Whitepaper', src: 'Paper', diff: 'I', url: 'https://uniswap.org/whitepaper.pdf' },
+        { title: 'Uniswap V3: Concentrated Liquidity Explained', src: 'Blog', diff: 'I', url: 'https://uniswap.org/blog/uniswap-v3' },
+        { title: 'Impermanent Loss: The Hidden Cost of Providing Liquidity', src: 'Blog', diff: 'I', url: 'https://finematics.com/impermanent-loss-explained/' },
+        { title: 'Curve Finance: Stableswap for Low-Slippage Swaps', src: 'Blog', diff: 'I', url: 'https://resources.curve.fi/base-features/understanding-curve' },
+      ]},
+      { name: 'Lending & Borrowing', items: [
+        { title: 'Aave: Overcollateralized Lending Protocol', src: 'Docs', diff: 'I', url: 'https://docs.aave.com/developers/getting-started/readme' },
+        { title: 'Compound Whitepaper: Interest Rate Models and cTokens', src: 'Paper', diff: 'I', url: 'https://compound.finance/documents/Compound.Whitepaper.pdf' },
+        { title: 'Liquidations: What Happens When Collateral Falls Below Threshold', src: 'Blog', diff: 'I', url: 'https://docs.aave.com/faq/liquidations' },
+        { title: 'Flash Loans: Borrow Millions with Zero Collateral', src: 'Docs', diff: 'A', url: 'https://docs.aave.com/developers/guides/flash-loans' },
+      ]},
+      { name: 'Oracles & Stablecoins', items: [
+        { title: 'Chainlink Data Feeds: Bringing Real-World Prices On-Chain', src: 'Docs', diff: 'F', url: 'https://docs.chain.link/data-feeds/getting-started' },
+        { title: 'Oracle Manipulation Attacks and TWAP Defenses', src: 'Blog', diff: 'I', url: 'https://blog.openzeppelin.com/secure-smart-contract-guidelines-the-dangers-of-price-oracles' },
+        { title: 'MakerDAO & DAI: Crypto-Collateralized Stablecoin', src: 'Blog', diff: 'I', url: 'https://makerdao.com/en/whitepaper/' },
+        { title: 'Governance Tokens and On-Chain Voting', src: 'Docs', diff: 'I', url: 'https://docs.openzeppelin.com/contracts/5.x/governance' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'frontend', emoji: '🌐', name: 'Web3 Frontend',
+    subtitle: 'connect wallets, read contracts, and build dApps users can actually use',
+    concepts: [
+      { name: 'Core Libraries', items: [
+        { title: 'viem: Type-Safe, Lightweight Ethereum Library', src: 'Docs', diff: 'F', url: 'https://viem.sh/docs/introduction' },
+        { title: 'ethers.js v6: The Battle-Tested Standard', src: 'Docs', diff: 'F', url: 'https://docs.ethers.org/v6/' },
+        { title: 'wagmi: React Hooks for Ethereum', src: 'Docs', diff: 'F', url: 'https://wagmi.sh/react/getting-started' },
+        { title: 'Providers, Signers, and Contracts in ethers.js', src: 'Docs', diff: 'F', url: 'https://docs.ethers.org/v6/getting-started/' },
+      ]},
+      { name: 'Wallet Connection', items: [
+        { title: 'RainbowKit: Wallet Connect UI in 5 Minutes', src: 'Docs', diff: 'F', url: 'https://www.rainbowkit.com/docs/introduction' },
+        { title: 'WalletConnect v2: Connect Any Wallet to Any dApp', src: 'Docs', diff: 'I', url: 'https://docs.walletconnect.com/web3modal/about' },
+        { title: 'EIP-712: Typed Structured Data Signing', src: 'Docs', diff: 'I', url: 'https://eips.ethereum.org/EIPS/eip-712' },
+        { title: 'MetaMask SDK: Deep Wallet Integration', src: 'Docs', diff: 'I', url: 'https://docs.metamask.io/wallet/get-started/quickstart/' },
+      ]},
+      { name: 'Full-Stack dApp Patterns', items: [
+        { title: 'Next.js + wagmi: Full-Stack dApp Starter', src: 'Docs', diff: 'F', url: 'https://wagmi.sh/examples/connect-wallet' },
+        { title: 'Transaction UX: Pending, Confirmed & Failed States', src: 'Blog', diff: 'I', url: 'https://wagmi.sh/react/guides/write-to-contract' },
+        { title: 'IPFS + Pinata: Store NFT Metadata Off-Chain', src: 'Docs', diff: 'I', url: 'https://docs.pinata.cloud/quickstart' },
+        { title: 'Querying On-Chain Data with The Graph', src: 'Docs', diff: 'I', url: 'https://thegraph.com/docs/en/developer/quick-start/' },
+        { title: 'Reading Events and Filtering Logs with viem', src: 'Docs', diff: 'I', url: 'https://viem.sh/docs/actions/public/getLogs' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'layer2', emoji: '⚡', name: 'Layer 2 & Scaling',
+    subtitle: 'why L1 is not enough and how rollups actually scale Ethereum',
+    concepts: [
+      { name: 'Why Scaling Is Hard', items: [
+        { title: 'The Blockchain Trilemma: Security, Scalability, Decentralization', src: 'Blog', diff: 'F', url: 'https://ethereum.org/en/developers/docs/scaling/' },
+        { title: 'An Incomplete Guide to Rollups — Vitalik Buterin', src: 'Blog', diff: 'F', url: 'https://vitalik.eth.limo/general/2021/01/05/rollup.html' },
+        { title: 'Data Availability: The Hidden Bottleneck', src: 'Blog', diff: 'I', url: 'https://ethereum.org/en/developers/docs/data-availability/' },
+      ]},
+      { name: 'Optimistic Rollups', items: [
+        { title: 'How Optimistic Rollups Work: Fraud Proofs Explained', src: 'Blog', diff: 'I', url: 'https://ethereum.org/en/developers/docs/scaling/optimistic-rollups/' },
+        { title: 'Arbitrum Developer Docs', src: 'Docs', diff: 'I', url: 'https://developer.arbitrum.io/intro/' },
+        { title: 'Base: Coinbase\'s L2 — Deploy Your First Contract', src: 'Docs', diff: 'F', url: 'https://docs.base.org/guides/deploy-smart-contracts' },
+        { title: 'OP Stack: Building on the Superchain', src: 'Docs', diff: 'I', url: 'https://stack.optimism.io/' },
+      ]},
+      { name: 'ZK Rollups', items: [
+        { title: 'ZK Rollups: How zkSync and Starknet Work', src: 'Blog', diff: 'I', url: 'https://ethereum.org/en/developers/docs/scaling/zk-rollups/' },
+        { title: 'zkSync Era Developer Docs', src: 'Docs', diff: 'I', url: 'https://docs.zksync.io/build/quick-start' },
+        { title: 'Starknet: Cairo and STARK-Based Proofs', src: 'Docs', diff: 'I', url: 'https://docs.starknet.io/documentation/' },
+        { title: 'EIP-4844: Blob Transactions and Lower L2 Fees', src: 'Blog', diff: 'I', url: 'https://eips.ethereum.org/EIPS/eip-4844' },
+      ]},
+      { name: 'Cross-Chain', items: [
+        { title: 'How Blockchain Bridges Work (and Why They Get Hacked)', src: 'Blog', diff: 'I', url: 'https://ethereum.org/en/developers/docs/bridges/' },
+        { title: 'LayerZero: Omnichain Messaging Protocol', src: 'Docs', diff: 'A', url: 'https://docs.layerzero.network/' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'security', emoji: '🛡️', name: 'Smart Contract Security',
+    subtitle: 'the most important section — bugs here lose real money',
+    concepts: [
+      { name: 'Core Vulnerabilities', items: [
+        { title: 'Reentrancy: The Attack That Forked Ethereum ($60M DAO Hack)', src: 'Blog', diff: 'I', url: 'https://solidity-by-example.org/hacks/re-entrancy/' },
+        { title: 'Integer Overflow & Underflow', src: 'Blog', diff: 'I', url: 'https://solidity-by-example.org/hacks/overflow/' },
+        { title: 'Access Control: tx.origin vs msg.sender', src: 'Blog', diff: 'I', url: 'https://solidity-by-example.org/hacks/phishing-with-tx-origin/' },
+        { title: 'Oracle Price Manipulation: Mango Markets $114M Post-Mortem', src: 'Blog', diff: 'I', url: 'https://osec.io/blog/2022-10-17-mango-markets-exploit' },
+        { title: 'Flash Loan Attacks: How Protocols Get Drained in One Block', src: 'Blog', diff: 'A', url: 'https://finematics.com/flash-loans-explained/' },
+        { title: 'Rekt News: Every Major DeFi Hack with Technical Analysis', src: 'Blog', diff: 'I', url: 'https://rekt.news/' },
+      ]},
+      { name: 'Hands-On CTF', items: [
+        { title: 'Ethernaut: OpenZeppelin\'s Security CTF (Start Here)', src: 'Course', diff: 'I', url: 'https://ethernaut.openzeppelin.com/' },
+        { title: 'Damn Vulnerable DeFi: Real DeFi Attack Scenarios', src: 'Course', diff: 'I', url: 'https://www.damnvulnerabledefi.xyz/' },
+        { title: 'Capture The Ether: Classic Solidity Challenges', src: 'Course', diff: 'I', url: 'https://capturetheether.com/' },
+        { title: 'Paradigm CTF: Advanced Real-World DeFi Challenges', src: 'Course', diff: 'A', url: 'https://ctf.paradigm.xyz/' },
+      ]},
+      { name: 'Audit Craft', items: [
+        { title: 'How to Audit a Smart Contract — Trail of Bits', src: 'Blog', diff: 'I', url: 'https://blog.trailofbits.com/2023/08/14/can-you-pass-the-rekt-test/' },
+        { title: 'Slither: Static Analysis for Solidity', src: 'Docs', diff: 'I', url: 'https://github.com/crytic/slither' },
+        { title: 'Echidna: Property-Based Fuzz Testing', src: 'Docs', diff: 'A', url: 'https://github.com/crytic/echidna' },
+        { title: 'SWC Registry: Smart Contract Weakness Classification', src: 'Docs', diff: 'I', url: 'https://swcregistry.io/' },
+        { title: 'Code4rena Audit Reports — Read Real Findings', src: 'Blog', diff: 'A', url: 'https://code4rena.com/reports' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'advanced-solidity', emoji: '⚙️', name: 'Advanced Solidity',
+    subtitle: 'patterns used in production protocols — proxies, assembly, gas',
+    concepts: [
+      { name: 'Proxy & Upgradeability', items: [
+        { title: 'Proxy Patterns: Why Immutable Code Needs Upgrades', src: 'Blog', diff: 'I', url: 'https://docs.openzeppelin.com/upgrades-plugins/1.x/proxies' },
+        { title: 'Transparent Proxy Pattern', src: 'Docs', diff: 'I', url: 'https://docs.openzeppelin.com/contracts/5.x/api/proxy#TransparentUpgradeableProxy' },
+        { title: 'UUPS Proxy: The Efficient Alternative (EIP-1822)', src: 'Docs', diff: 'I', url: 'https://eips.ethereum.org/EIPS/eip-1822' },
+        { title: 'Diamond Pattern (EIP-2535): Multi-Facet Proxy', src: 'Blog', diff: 'A', url: 'https://eips.ethereum.org/EIPS/eip-2535' },
+        { title: 'Storage Collisions: The Deadliest Proxy Pitfall', src: 'Blog', diff: 'A', url: 'https://docs.openzeppelin.com/upgrades-plugins/1.x/proxies#storage-collisions-between-implementation-and-proxy' },
+      ]},
+      { name: 'Yul & Inline Assembly', items: [
+        { title: 'Yul: Writing EVM Bytecode Directly', src: 'Docs', diff: 'A', url: 'https://docs.soliditylang.org/en/latest/yul.html' },
+        { title: 'Huff: Write Pure EVM Bytecode', src: 'Docs', diff: 'A', url: 'https://docs.huff.sh/' },
+        { title: 'Deconstructing a Solidity Contract — OpenZeppelin Series', src: 'Blog', diff: 'A', url: 'https://blog.openzeppelin.com/deconstructing-a-solidity-contract-part-i-introduction-832efd2d7737' },
+      ]},
+      { name: 'Gas Optimization', items: [
+        { title: 'Gas Optimization: 80+ Tips — RareSkills', src: 'Blog', diff: 'I', url: 'https://www.rareskills.io/post/gas-optimization' },
+        { title: 'Tight Variable Packing: Save Storage Slots', src: 'Docs', diff: 'I', url: 'https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html' },
+        { title: 'Custom Errors vs Revert Strings: Gas Impact', src: 'Blog', diff: 'I', url: 'https://blog.soliditylang.org/2021/04/21/custom-errors/' },
+        { title: 'Solady: Ultra Gas-Optimized Contracts (Read the Source)', src: 'Docs', diff: 'A', url: 'https://github.com/Vectorized/solady' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'zk', emoji: '🔒', name: 'Zero-Knowledge Proofs',
+    subtitle: 'the cryptography powering the next generation of privacy and scaling',
+    concepts: [
+      { name: 'ZK Intuition', items: [
+        { title: 'Zero Knowledge Proofs: An Illustrated Primer — Matthew Green', src: 'Blog', diff: 'F', url: 'https://blog.cryptographyengineering.com/2014/11/27/zero-knowledge-proofs-illustrated-primer/' },
+        { title: 'What Are ZK-SNARKs? — Vitalik Buterin', src: 'Blog', diff: 'I', url: 'https://vitalik.eth.limo/general/2021/01/26/snarks.html' },
+        { title: 'ZK-STARKs vs ZK-SNARKs: The Tradeoffs', src: 'Blog', diff: 'I', url: 'https://consensys.io/blog/starks-vs-snarks' },
+        { title: 'ZK Learning Course — zk-learning.org', src: 'Course', diff: 'I', url: 'https://zk-learning.org/' },
+      ]},
+      { name: 'Building ZK Circuits', items: [
+        { title: 'Circom: Domain-Specific Language for ZK Circuits', src: 'Docs', diff: 'A', url: 'https://docs.circom.io/' },
+        { title: 'SnarkJS: Prove & Verify Circuits in JavaScript', src: 'Docs', diff: 'A', url: 'https://github.com/iden3/snarkjs' },
+        { title: 'Noir: Rust-Like ZK Language by Aztec', src: 'Docs', diff: 'A', url: 'https://noir-lang.org/docs' },
+      ]},
+      { name: 'ZK Applications', items: [
+        { title: 'The Different Types of ZK-EVMs — Vitalik Buterin', src: 'Blog', diff: 'A', url: 'https://vitalik.eth.limo/general/2022/08/04/zkevm.html' },
+        { title: 'ZK Email: Prove You Own an Email Without Revealing It', src: 'Blog', diff: 'A', url: 'https://blog.aayushg.com/zkemail/' },
+        { title: 'zkSync: ZK Rollup Architecture Deep Dive', src: 'Docs', diff: 'A', url: 'https://docs.zksync.io/build/quick-start' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'indexing', emoji: '📊', name: 'Indexing & Data',
+    subtitle: 'query blockchain history without running a full node',
+    concepts: [
+      { name: 'The Graph Protocol', items: [
+        { title: 'The Graph: Index Blockchain Data with Subgraphs', src: 'Docs', diff: 'F', url: 'https://thegraph.com/docs/en/about/' },
+        { title: 'Build Your First Subgraph in 30 Minutes', src: 'Docs', diff: 'I', url: 'https://thegraph.com/docs/en/developer/quick-start/' },
+        { title: 'AssemblyScript Mappings: Transforming On-Chain Events', src: 'Docs', diff: 'I', url: 'https://thegraph.com/docs/en/developing/creating-a-subgraph/' },
+        { title: 'GraphQL Queries for Your Subgraph', src: 'Docs', diff: 'I', url: 'https://thegraph.com/docs/en/querying/querying-the-graph/' },
+      ]},
+      { name: 'Analytics & Alternative Indexers', items: [
+        { title: 'Dune Analytics: SQL for Blockchain Data', src: 'Docs', diff: 'F', url: 'https://docs.dune.com/' },
+        { title: 'Moralis: Web3 Data API (Wallet History, NFTs, DeFi)', src: 'Docs', diff: 'I', url: 'https://docs.moralis.io/' },
+        { title: 'Tenderly: Real-Time Contract Monitoring & Debugging', src: 'Docs', diff: 'I', url: 'https://docs.tenderly.co/' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'frontier', emoji: '🚀', name: 'Frontier: 2024–2025',
+    subtitle: 'account abstraction, MEV, modular chains, and what is being built now',
+    concepts: [
+      { name: 'Account Abstraction', items: [
+        { title: 'ERC-4337: Smart Wallets Without Protocol Changes', src: 'Docs', diff: 'I', url: 'https://eips.ethereum.org/EIPS/eip-4337' },
+        { title: 'You Could Have Invented Account Abstraction — Alchemy', src: 'Blog', diff: 'I', url: 'https://www.alchemy.com/blog/account-abstraction' },
+        { title: 'Safe: The Most Deployed Smart Account Protocol', src: 'Docs', diff: 'I', url: 'https://docs.safe.global/home/what-is-safe' },
+        { title: 'Paymasters: Let Users Pay Gas in Any Token', src: 'Docs', diff: 'A', url: 'https://docs.pimlico.io/permissionless/reference/bundler-actions/sendUserOperation' },
+        { title: 'EIP-7702: EOA Code Delegation (Ethereum 2025)', src: 'Docs', diff: 'A', url: 'https://eips.ethereum.org/EIPS/eip-7702' },
+      ]},
+      { name: 'MEV & Block Production', items: [
+        { title: 'MEV: Maximal Extractable Value Explained', src: 'Blog', diff: 'I', url: 'https://ethereum.org/en/developers/docs/mev/' },
+        { title: 'Ethereum Is a Dark Forest — Dan Robinson & Georgios Konstantopoulos', src: 'Blog', diff: 'I', url: 'https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest' },
+        { title: 'Flashbots: How MEV-Boost and Builders Work', src: 'Docs', diff: 'A', url: 'https://docs.flashbots.net/flashbots-mev-boost/introduction' },
+      ]},
+      { name: 'Modular Blockchains', items: [
+        { title: 'Modular vs Monolithic Blockchains — Celestia', src: 'Blog', diff: 'I', url: 'https://celestia.org/learn/basics/modular-and-monolithic-blockchains/' },
+        { title: 'EigenLayer: Restaking and Actively Validated Services', src: 'Docs', diff: 'A', url: 'https://docs.eigenlayer.xyz/overview' },
+        { title: 'Intents: The Next UX Primitive for DeFi — Paradigm', src: 'Blog', diff: 'A', url: 'https://www.paradigm.xyz/2023/06/intents' },
+      ]},
+      { name: 'Careers & Community', items: [
+        { title: 'Patrick Collins Web3 Full Course (32h — Most-Watched Ever)', src: 'Video', diff: 'F', url: 'https://www.youtube.com/watch?v=umepbfKp5rI' },
+        { title: 'Cyfrin Updraft: Structured Solidity & Security Curriculum', src: 'Course', diff: 'F', url: 'https://updraft.cyfrin.io/' },
+        { title: 'Secureum Bootcamp: Security-Focused Web3 Training', src: 'Course', diff: 'A', url: 'https://secureum.substack.com/' },
+        { title: 'How to Get a Job in Web3 as a Smart Contract Developer', src: 'Blog', diff: 'F', url: 'https://www.cyfrin.io/blog/how-to-get-a-job-in-web3-solidity-developer' },
+      ]},
+    ]
+  },
+
+  {
+    id: 'projects', emoji: '🛠️', name: 'Projects',
+    subtitle: 'reading becomes skill only when you build — deploy something real',
+    concepts: [
+      { name: 'Solidity Basics — get your hands dirty', items: [
+        { title: 'Deploy an ERC-20 Token from Scratch', src: 'Weekend', diff: 'F', btn: 'Build →', url: 'https://solidity-by-example.org/app/erc20/' },
+        { title: 'Build a Simple Voting Contract', src: 'Weekend', diff: 'F', btn: 'Build →', url: 'https://docs.soliditylang.org/en/latest/solidity-by-example.html#voting' },
+        { title: 'Multi-Sig Wallet: N-of-M Transaction Approval', src: 'Weekend', diff: 'F', btn: 'Build →', url: 'https://solidity-by-example.org/app/multi-sig-wallet/' },
+      ]},
+      { name: 'Tooling — test like a pro', items: [
+        { title: 'Foundry Test Suite: Unit + Fuzz Test Your Own Token', src: 'Weekend', diff: 'F', btn: 'Build →', url: 'https://book.getfoundry.sh/forge/tests' },
+        { title: 'Fork Test a DeFi Protocol on Mainnet', src: 'Week1', diff: 'I', btn: 'Build →', url: 'https://book.getfoundry.sh/forge/fork-testing' },
+        { title: 'Gas Report: Optimize a Contract Under a Gas Budget', src: 'Weekend', diff: 'I', btn: 'Build →', url: 'https://book.getfoundry.sh/forge/gas-reports' },
+      ]},
+      { name: 'NFT & Tokens — ship collectibles', items: [
+        { title: 'NFT Collection with On-Chain SVG Metadata', src: 'Weekend', diff: 'F', btn: 'Build →', url: 'https://docs.openzeppelin.com/contracts/5.x/erc721' },
+        { title: 'Dutch Auction NFT Mint', src: 'Week1', diff: 'I', btn: 'Build →', url: 'https://solidity-by-example.org/app/dutch-auction/' },
+        { title: 'Soulbound Achievement Badge System (ERC-5192)', src: 'Week1', diff: 'I', btn: 'Build →', url: 'https://eips.ethereum.org/EIPS/eip-5192' },
+      ]},
+      { name: 'DeFi — money legos', items: [
+        { title: 'Build a Minimal AMM (x*y=k Swap Pool)', src: 'Week1', diff: 'I', btn: 'Build →', url: 'https://solidity-by-example.org/defi/uniswap-v2/' },
+        { title: 'Flash Loan Arbitrage Bot on Forked Mainnet', src: 'Week2', diff: 'A', btn: 'Build →', url: 'https://docs.aave.com/developers/guides/flash-loans' },
+        { title: 'Yield Aggregator: Auto-Compound a Lending Position', src: 'Week2', diff: 'A', btn: 'Build →', url: 'https://eips.ethereum.org/EIPS/eip-4626' },
+        { title: 'Stablecoin with Collateral & Liquidations (Cyfrin Guide)', src: 'Week2', diff: 'A', btn: 'Build →', url: 'https://github.com/Cyfrin/foundry-defi-stablecoin-f23' },
+      ]},
+      { name: 'Web3 Frontend — dApps people can use', items: [
+        { title: 'Wallet Connect + Display Balance (Next.js + wagmi)', src: 'Weekend', diff: 'F', btn: 'Build →', url: 'https://wagmi.sh/examples/connect-wallet' },
+        { title: 'Full dApp: Mint & Transfer NFTs from a UI', src: 'Week1', diff: 'I', btn: 'Build →', url: 'https://www.rainbowkit.com/docs/introduction' },
+        { title: 'DAO Frontend: Propose, Vote, Execute On-Chain', src: 'Week2', diff: 'I', btn: 'Build →', url: 'https://docs.openzeppelin.com/contracts/5.x/governance' },
+      ]},
+      { name: 'Security — hack to learn', items: [
+        { title: 'Ethernaut: Complete All 30 Levels', src: 'Week2', diff: 'I', btn: 'Hack →', url: 'https://ethernaut.openzeppelin.com/' },
+        { title: 'Damn Vulnerable DeFi: Solve All Challenges', src: 'Week2', diff: 'A', btn: 'Hack →', url: 'https://www.damnvulnerabledefi.xyz/' },
+        { title: 'Write a Full Audit Report on an Open-Source Protocol', src: 'Week2', diff: 'A', btn: 'Build →', url: 'https://github.com/Cyfrin/security-and-auditing-full-course-s23' },
+      ]},
+      { name: 'Advanced — production grade', items: [
+        { title: 'Upgradeable Protocol with UUPS Proxy + Full Test Suite', src: 'Week1', diff: 'I', btn: 'Build →', url: 'https://docs.openzeppelin.com/upgrades-plugins/1.x/' },
+        { title: 'Build a Subgraph and Query It From Your dApp', src: 'Week1', diff: 'I', btn: 'Build →', url: 'https://thegraph.com/docs/en/developer/quick-start/' },
+        { title: 'ERC-4337 Smart Wallet with Custom Validation Logic', src: 'Week2', diff: 'A', btn: 'Build →', url: 'https://docs.alchemy.com/docs/how-to-build-a-smart-account-using-erc-4337' },
+        { title: 'ZK Proof of Membership: Prove You\'re in a Set Privately', src: 'Week2', diff: 'A', btn: 'Build →', url: 'https://docs.circom.io/getting-started/installation/' },
+      ]},
+    ]
+  }
+];
+
+// ── State ──────────────────────────────────────────────────────────────────────
+const KEY = 'gradual-web3-v1';
+let done = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+let activeFilter = 'all';
+let activeDiff = null;
+let searchQ = '';
+
+// ── Build DOM ──────────────────────────────────────────────────────────────────
+function buildId(catId, cIdx, iIdx) { return `${catId}:${cIdx}:${iIdx}`; }
+
+function renderAll() {
+  const container = document.getElementById('categories');
+  container.innerHTML = '';
+
+  DATA.forEach(cat => {
+    const el = document.createElement('div');
+    el.className = 'category';
+    el.id = 'cat-' + cat.id;
+
+    let allItems = [];
+    cat.concepts.forEach((c, ci) => c.items.forEach((item, ii) => allItems.push({ item, ci, ii })));
+    const total = allItems.length;
+    const doneCount = allItems.filter(({ item, ci, ii }) => done.has(buildId(cat.id, ci, ii))).length;
+
+    el.innerHTML = `
+      <div class="cat-header" onclick="toggleCat('${cat.id}')">
+        <span class="cat-chevron">▶</span>
+        <span class="cat-emoji">${cat.emoji}</span>
+        <span class="cat-name">${cat.name}<span class="cat-subtitle">${cat.subtitle}</span></span>
+        <div class="cat-meta">
+          <span class="cat-done-count" id="cdone-${cat.id}">${doneCount}</span>
+          <span class="cat-total-count">/ ${total}</span>
+          <div class="cat-bar-wrap"><div class="cat-bar-fill" id="cbar-${cat.id}" style="width:${total?doneCount/total*100:0}%"></div></div>
+        </div>
+      </div>
+      <div class="questions-list" id="qlist-${cat.id}"></div>`;
+
+    const qlist = el.querySelector('.questions-list');
+    let order = 1;
+    cat.concepts.forEach((concept, ci) => {
+      const div = document.createElement('div');
+      div.className = 'concept-divider';
+      div.innerHTML = `<span class="concept-label">${concept.name}</span>`;
+      qlist.appendChild(div);
+
+      concept.items.forEach((item, ii) => {
+        const id = buildId(cat.id, ci, ii);
+        const isDone = done.has(id);
+        const diffLabel = item.diff === 'F' ? 'Foundational' : item.diff === 'I' ? 'Intermediate' : 'Advanced';
+        const row = document.createElement('div');
+        row.className = 'q-row' + (isDone ? ' done' : '');
+        row.dataset.id = id;
+        row.dataset.diff = item.diff;
+        row.dataset.title = item.title.toLowerCase();
+        row.innerHTML = `
+          <div class="q-checkbox${isDone?' checked':''}" onclick="toggle('${id}',this)">${isDone?'✓':''}</div>
+          <span class="q-order">${order}</span>
+          <span class="diff-badge ${item.diff}">${diffLabel}</span>
+          <span class="q-title">${item.title}</span>
+          <span class="src-badge ${item.src}">${item.src}</span>
+          <a class="q-link${item.btn ? ' build' : ''}" href="${item.url}" target="_blank" rel="noopener">${item.btn || 'Read →'}</a>`;
+        qlist.appendChild(row);
+        order++;
+      });
+    });
+
+    container.appendChild(el);
+  });
+
+  applyFilters();
+  updateStats();
+}
+
+function toggleCat(id) {
+  const el = document.getElementById('cat-' + id);
+  el.classList.toggle('open');
+}
+
+function toggle(id, checkbox) {
+  if (done.has(id)) {
+    done.delete(id);
+    checkbox.classList.remove('checked');
+    checkbox.textContent = '';
+    checkbox.closest('.q-row').classList.remove('done');
+  } else {
+    done.add(id);
+    checkbox.classList.add('checked');
+    checkbox.textContent = '✓';
+    checkbox.closest('.q-row').classList.add('done');
+  }
+  localStorage.setItem(KEY, JSON.stringify([...done]));
+  updateStats();
+}
+
+function updateStats() {
+  const total = document.querySelectorAll('.q-row').length;
+  const doneCount = done.size;
+  const rem = total - doneCount;
+  const pct = total ? Math.round(doneCount / total * 100) : 0;
+  document.getElementById('done-count').textContent = doneCount;
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('stat-done').textContent = doneCount;
+  document.getElementById('stat-rem').textContent = rem;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  DATA.forEach(cat => {
+    let catDone = 0, catTotal = 0;
+    cat.concepts.forEach((c, ci) => c.items.forEach((_, ii) => {
+      catTotal++;
+      if (done.has(buildId(cat.id, ci, ii))) catDone++;
+    }));
+    const doneEl = document.getElementById('cdone-' + cat.id);
+    const barEl = document.getElementById('cbar-' + cat.id);
+    if (doneEl) doneEl.textContent = catDone;
+    if (barEl) barEl.style.width = catTotal ? (catDone / catTotal * 100) + '%' : '0%';
+  });
+}
+
+function applyFilters() {
+  let anyVisible = false;
+  document.querySelectorAll('.q-row').forEach(row => {
+    const isDone = row.classList.contains('done');
+    const diff = row.dataset.diff;
+    const title = row.dataset.title;
+    let show = true;
+    if (activeFilter === 'todo' && isDone) show = false;
+    if (activeFilter === 'done' && !isDone) show = false;
+    if (activeDiff && diff !== activeDiff) show = false;
+    if (searchQ && !title.includes(searchQ)) show = false;
+    row.classList.toggle('hidden', !show);
+    if (show) anyVisible = true;
+  });
+
+  document.querySelectorAll('.category').forEach(cat => {
+    const rows = cat.querySelectorAll('.q-row:not(.hidden)');
+    cat.style.display = rows.length === 0 ? 'none' : '';
+  });
+
+  document.getElementById('empty-state').classList.toggle('show', !anyVisible);
+}
+
+// ── Filters ────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+document.querySelectorAll('.diff-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const d = btn.dataset.diff;
+    if (activeDiff === d) {
+      activeDiff = null;
+      btn.classList.remove('active');
+    } else {
+      document.querySelectorAll('.diff-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeDiff = d;
+    }
+    applyFilters();
+  });
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQ = e.target.value.toLowerCase().trim();
+  applyFilters();
+  if (searchQ) document.querySelectorAll('.category').forEach(c => { if (c.style.display !== 'none') c.classList.add('open'); });
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Reset all progress?')) return;
+  done.clear();
+  localStorage.removeItem(KEY);
+  document.querySelectorAll('.q-row').forEach(row => {
+    row.classList.remove('done');
+    const cb = row.querySelector('.q-checkbox');
+    cb.classList.remove('checked');
+    cb.textContent = '';
+  });
+  updateStats();
+});
+
+// ── Theme ──────────────────────────────────────────────────────────────────────
+const themeBtn = document.getElementById('theme-btn');
+const html = document.documentElement;
+const savedTheme = localStorage.getItem('gradual-web3-theme') || 'dark';
+html.setAttribute('data-theme', savedTheme);
+themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+themeBtn.addEventListener('click', () => {
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  themeBtn.textContent = next === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('gradual-web3-theme', next);
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+renderAll();
+document.querySelector('.category').classList.add('open');
+</script>
+</body>
+</html>
